@@ -1,0 +1,96 @@
+name: secret workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      access_key_id:
+        description: 'Access key to compare'
+        required: true
+        type: string
+      filter_secret_pattern:
+        description: 'Pattern to filter secrets'
+        required: true
+        type: string
+
+
+
+jobs:
+  get-qa-secrets:
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - name: All secrets
+        run: |
+          arr=$(echo "$SECRETS_CONTEXT" | jq -r 'keys[]' | grep "$FILTER_SECRET_REGX")
+          for secret in ${arr[@]}; do
+            value=$(echo $SECRETS_CONTEXT | jq .$secret | sed 's/^.//;s/.$//')
+            if [[ "$AK" == $value ]] ; then
+               echo "Is present in $secret"
+            else
+              echo "Is not present in $secret"
+            fi
+          done
+        #            echo "$SECRETS_CONTEXT"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+          AK: ${{ github.event.inputs.access_key_id}}
+          FILTER_SECRET_REGX: ${{ github.event.inputs.filter_secret_pattern }}
+  get-st-secrets:
+    runs-on: ubuntu-latest
+    environment: st
+    steps:
+      - name: All secrets
+        run: |
+          arr=$(echo "$SECRETS_CONTEXT" | jq -r 'keys[]' | grep "$FILTER_SECRET_REGX")
+          for secret in ${arr[@]}; do
+            value=$(echo $SECRETS_CONTEXT | jq .$secret | sed 's/^.//;s/.$//')
+            if [[ "$AK" == $value ]] ; then
+               echo "Is present in $secret"
+            else
+              echo "Is not present in $secret"
+            fi
+          done
+        #            echo "$SECRETS_CONTEXT"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+          AK: ${{ github.event.inputs.access_key_id}}
+          FILTER_SECRET_REGX: ${{ github.event.inputs.filter_secret_pattern }}
+  get-pr-secrets:
+    runs-on: ubuntu-latest
+    environment: pr
+    steps:
+      - name: All secrets
+        run: |
+          arr=$(echo "$SECRETS_CONTEXT" | jq -r 'keys[]' | grep "$FILTER_SECRET_REGX")
+          for secret in ${arr[@]}; do
+            value=$(echo $SECRETS_CONTEXT | jq .$secret | sed 's/^.//;s/.$//')
+            if [[ "$AK" == $value ]] ; then
+               echo "Is present in $secret"
+            else
+              echo "Is not present in $secret"
+            fi
+          done
+        #            echo "$SECRETS_CONTEXT"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+          AK: ${{ github.event.inputs.access_key_id}}
+          FILTER_SECRET_REGX: ${{ github.event.inputs.filter_secret_pattern }}
+
+
+#  top-secret:
+#    runs-on: ubuntu-latest
+#    environment: qa
+#
+#    steps:
+#      # These are read by default from .env
+#      - name: Environment
+#        run: echo "My env value is ${{ env.VALUE_FROM_ENV }}"
+#
+#      # A secret could be the GH_TOKEN
+#      - name: Tell me a secret!
+#        run: echo "My secret is ${{ secrets.MY_SECRET }}"
+#
+#      - name: All secrets
+#        run: echo "$SECRETS_CONTEXT"
+#        env:
+#          SECRETS_CONTEXT: ${{ toJson(secrets) }}
